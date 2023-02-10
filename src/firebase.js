@@ -3,6 +3,7 @@ import { initializeApp } from 'firebase/app';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 import { getAuth } from 'firebase/auth';
+import { getDatabase } from 'firebase/database';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -11,11 +12,12 @@ const firebaseConfig = {
     projectId: 'react-firebase-chat-app-a324a',
     storageBucket: 'react-firebase-chat-app-a324a.appspot.com',
     messagingSenderId: '823322500591',
-    appId: '1:823322500591:web:3d89415efe900775202a1a'
+    appId: '1:823322500591:web:3d89415efe900775202a1a',
+    databaseURL:
+        'https://react-firebase-chat-app-a324a-default-rtdb.asia-southeast1.firebasedatabase.app'
 };
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-
 export const database = getDatabase(app);
