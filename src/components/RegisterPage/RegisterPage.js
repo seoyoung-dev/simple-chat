@@ -1,6 +1,6 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 
 function RegisterPage() {
     const {
@@ -8,15 +8,18 @@ function RegisterPage() {
         handleSubmit,
         watch,
         formState: { errors }
-    } = useForm();
+    } = useForm({ mode: 'onChange' });
+
     const onSubmit = (data) => {
         console.log(data);
-    }; // your form submit function which will invoke after successful validation
+    };
 
-    console.log(watch('example'));
+    const password = useRef();
+    password.current = watch('password');
+
     return (
         <div className="auth-wrapper">
-            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                 <h3>Register</h3>
             </div>
 
@@ -24,22 +27,64 @@ function RegisterPage() {
                 <label>Email</label>
                 <input
                     type="email"
-                    {...register('email', { required: true })}
+                    {...register('email', {
+                        required: true,
+                        pattern: /^\S+@\S+$/i,
+                        maxLength: 20
+                    })}
                 />
+                {errors.email && errors.email.type === 'required' && (
+                    <span>필수 입력 사항입니다</span>
+                )}
+                {errors.email && errors.email.type === 'pattern' && (
+                    <span>잘못된 패턴입니다</span>
+                )}
+                {errors.email && errors.email.type === 'maxLength' && (
+                    <span>최대 20자를 초과할 수 없습니다</span>
+                )}
+
                 <label>Name</label>
-                <input {...register('name', { required: true })} />
+                <input
+                    {...register('name', { required: true, maxLength: 10 })}
+                />
+                {errors.name && errors.name.type === 'required' && (
+                    <span>필수 입력 사항입니다</span>
+                )}
+                {errors.name && errors.name.type === 'maxLength' && (
+                    <span>최대 10자를 초과할 수 없습니다</span>
+                )}
+
                 <label>Password</label>
                 <input
                     type="password"
-                    {...register('password', { required: true })}
+                    {...register('password', {
+                        required: true,
+                        minLength: 6
+                    })}
                 />
+                {errors.password && errors.password.type === 'required' && (
+                    <span>필수 입력 사항입니다</span>
+                )}
+                {errors.password && errors.password.type === 'minLength' && (
+                    <span>비밀번호는 최소 6자 이상이어야 합니다</span>
+                )}
+
                 <label>Password Confirm</label>
                 <input
                     type="password"
-                    {...register('password_confirm', { required: true })}
+                    {...register('password_confirm', {
+                        required: true,
+                        validate: (value) => value === password.current
+                    })}
                 />
-
-                {errors.exampleRequired && <span>This field is required</span>}
+                {errors.password_confirm &&
+                    errors.password_confirm.type === 'required' && (
+                        <span>필수 입력 사항입니다</span>
+                    )}
+                {errors.password_confirm &&
+                    errors.password_confirm.type === 'validate' && (
+                        <span>비밀번호가 일치하지 않습니다</span>
+                    )}
 
                 <input type="submit" />
             </form>

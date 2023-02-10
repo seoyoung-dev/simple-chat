@@ -25,6 +25,12 @@ body {
     border-bottom: 1px solid rgb(79, 98, 148);
 }
 
+.auth-wrapper span {
+    color: #777777;
+    font-weight: 300;
+    font-size: 14px;
+}
+
 .auth-wrapper .form {
     background: #0e101c;
     max-width: 400px;
