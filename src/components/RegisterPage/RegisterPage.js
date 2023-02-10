@@ -1,21 +1,49 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { auth } from '../../firebase';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import md5 from 'md5';
 
 function RegisterPage() {
+    const [errorFromSubmit, setErrorFromSubmit] = useState();
+    const [loading, setLoading] = useState(false);
+
     const {
         register,
         handleSubmit,
         watch,
         formState: { errors }
-    } = useForm({ mode: 'onChange' });
+    } = useForm();
 
-    const onSubmit = (data) => {
-        console.log(data);
+    const onSubmit = async (data) => {
+        try {
+            setLoading(true);
+            let createdUser = await createUserWithEmailAndPassword(
+                auth,
+                data.email,
+                data.password
+            );
+            await updateProfile(auth.currentUser, {
+                displayName: data.name,
+                photoURL: `http:gravatar.com/avatar/${md5(
+                    createdUser.user.email
+                )}?d=identicon`
+            });
+            setLoading(false);
+        } catch (error) {
+            setErrorFromSubmit(error.message);
+            setLoading(false);
+            setTimeout(() => {
+                setErrorFromSubmit('');
+            }, 5000);
+        }
     };
 
     const password = useRef();
     password.current = watch('password');
+
+    //
 
     return (
         <div className="auth-wrapper">
@@ -85,8 +113,9 @@ function RegisterPage() {
                     errors.password_confirm.type === 'validate' && (
                         <span>비밀번호가 일치하지 않습니다</span>
                     )}
+                {errorFromSubmit && <p>{errorFromSubmit}</p>}
 
-                <input type="submit" />
+                <input type="submit" disabled={loading} />
             </form>
             <Link to={'/login'} id="link">
                 이미 아이디가 있나요?
