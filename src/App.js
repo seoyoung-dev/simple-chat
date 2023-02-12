@@ -13,9 +13,7 @@ import { setUser } from './redux/actions/user_action';
 function App() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const isLoading = useSelector((state) => {
-        console.log(state);
-    });
+    const isLoading = useSelector((state) => state.user.isLoading);
 
     useEffect(() => {
         onAuthStateChanged(auth, (user) => {
