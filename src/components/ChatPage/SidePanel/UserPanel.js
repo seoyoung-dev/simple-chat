@@ -18,8 +18,8 @@ function UserPanel() {
                 <Image
                     src={user && user.photoURL}
                     roundedCircle
-                    style={{ width: '30p', height: '30px', marginTop: '3px' }}
-                ></Image>
+                    style={{ width: '30px', height: '30px', marginTop: '3px' }}
+                />
                 <Dropdown>
                     <Dropdown.Toggle
                         id="dropdown-basic"
