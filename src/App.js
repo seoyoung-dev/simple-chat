@@ -8,7 +8,7 @@ import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { setUser } from './redux/actions/user_action';
+import { setUser, clearUser } from './redux/actions/user_action';
 
 function App() {
     const navigate = useNavigate();
@@ -25,6 +25,7 @@ function App() {
             } else {
                 // 로그인 되지 않은 상태
                 navigate('/login');
+                dispatch(clearUser(user));
             }
         });
     }, []);
