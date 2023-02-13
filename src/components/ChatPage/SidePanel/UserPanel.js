@@ -2,15 +2,17 @@ import React, { useRef } from 'react';
 import { RiChatSmile2Line } from 'react-icons/ri';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Image from 'react-bootstrap/Image';
-import { useSelector } from 'react-redux';
-import { auth } from '../../../firebase';
-import { signOut } from 'firebase/auth';
-import { storage } from '../../../firebase';
-import { ref, uploadBytes } from 'firebase/storage';
+import { useDispatch, useSelector } from 'react-redux';
+import { setPhotoURL } from '../../../redux/actions/user_action';
+import { auth, storage, database } from '../../../firebase';
+import { signOut, updateProfile } from 'firebase/auth';
+import { ref as strRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, child, push, update } from 'firebase/database';
 
 function UserPanel() {
     const user = useSelector((state) => state.user.currentUser);
     const inputOpenImageRef = useRef();
+    const dispatch = useDispatch();
 
     const handleOpenImageRef = () => {
         inputOpenImageRef.current.click();
@@ -20,14 +22,28 @@ function UserPanel() {
         console.log('logout success!');
     };
 
-    const handleUploadImage = (e) => {
+    const handleUploadImage = async (e) => {
         try {
             const file = e.target.files[0];
             const metadata = { contentType: file.type };
-            const storageRef = ref(storage, `user+image/${user.uid})`);
-            const uploadTask = uploadBytes(storageRef, file, metadata);
-        } catch (e) {
-            console.error('Error adding document: ', e);
+            const storageRef = strRef(storage, `user+image/${user.uid})`);
+            await uploadBytes(storageRef, file, metadata);
+
+            // 스토리지에 올린 파일을 URL 형식으로 다운로드 함
+            let downloadURL = await getDownloadURL(storageRef);
+
+            // 프로필 이미지 수정
+            await updateProfile(auth.currentUser, {
+                photoURL: downloadURL
+            });
+
+            // redux 수정
+            dispatch(setPhotoURL(downloadURL));
+
+            // database 수정
+            update(ref(database, `users/${user.uid}`), { image: downloadURL });
+        } catch (error) {
+            alert(error);
         }
     };
 
