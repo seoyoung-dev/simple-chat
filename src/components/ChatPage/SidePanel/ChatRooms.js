@@ -6,18 +6,33 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { connect } from 'react-redux';
 import { database } from '../../../firebase';
-import { ref, push, set, update, child } from 'firebase/database';
+import { ref, push, update, child, onChildAdded } from 'firebase/database';
 
 class ChatRooms extends Component {
     state = {
         show: false,
         name: '',
         description: '',
-        chatRoomsRef: ref(database, 'chatRooms')
+        chatRoomsRef: ref(database, 'chatRooms'),
+        chatRooms: []
+    };
+
+    componentDidMount() {
+        this.addChatRoomsListeners();
+    }
+
+    addChatRoomsListeners = () => {
+        let chatRoomsArray = [];
+        onChildAdded(this.state.chatRoomsRef, (data) => {
+            chatRoomsArray.push(data.val());
+            this.setState({ chatRooms: chatRoomsArray });
+        });
     };
 
     handleClose = () => this.setState({ show: false });
+
     handleShow = () => this.setState({ show: true });
+
     isFormValid = (name, description) => name && description;
 
     handleSubmit = (e) => {
@@ -30,6 +45,7 @@ class ChatRooms extends Component {
             alert('내용을 입력하세요.');
         }
     };
+
     addChatRoom = async () => {
         const key = push(this.state.chatRoomsRef).key;
         const { name, description } = this.state;
@@ -78,6 +94,12 @@ class ChatRooms extends Component {
                         }}
                     />
                 </div>
+                <ul style={{ listStyleType: 'none', padding: 0 }}>
+                    {this.state.chatRooms &&
+                        this.state.chatRooms.map((room) => {
+                            return <li key={room.id}># {room.name}</li>;
+                        })}
+                </ul>
 
                 <Modal show={this.state.show} onHide={this.handleClose}>
                     <Modal.Header closeButton>
