@@ -6,7 +6,8 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { connect } from 'react-redux';
 import { database } from '../../../firebase';
-import { ref, push, update, child, onChildAdded } from 'firebase/database';
+import { ref, push, update, child, onChildAdded, off } from 'firebase/database';
+import { setCurrentChatRoom } from '../../../redux/actions/chatRoom_action';
 
 class ChatRooms extends Component {
     state = {
@@ -14,18 +15,35 @@ class ChatRooms extends Component {
         name: '',
         description: '',
         chatRoomsRef: ref(database, 'chatRooms'),
-        chatRooms: []
+        chatRooms: [],
+        firstLoad: true,
+        activeChatRoomId: ''
     };
 
     componentDidMount() {
         this.addChatRoomsListeners();
     }
 
+    componentWillUnmount() {
+        off(this.state.chatRoomsRef);
+    }
+
+    setFirstChatRoom = () => {
+        const firstChatRoom = this.state.chatRooms[0];
+        if (this.state.firstLoad && this.state.chatRooms.length > 0) {
+            this.props.dispatch(setCurrentChatRoom(firstChatRoom));
+            this.setState({ activeChatRoomId: firstChatRoom.id });
+        }
+        this.setState({ firstLoad: false });
+    };
+
     addChatRoomsListeners = () => {
         let chatRoomsArray = [];
         onChildAdded(this.state.chatRoomsRef, (data) => {
             chatRoomsArray.push(data.val());
-            this.setState({ chatRooms: chatRoomsArray });
+            this.setState({ chatRooms: chatRoomsArray }, () => {
+                this.setFirstChatRoom();
+            });
         });
     };
 
@@ -72,6 +90,11 @@ class ChatRooms extends Component {
         }
     };
 
+    changeChatRoom = (room) => {
+        this.props.dispatch(setCurrentChatRoom(room));
+        this.setState({ activeChatRoomId: room.id });
+    };
+
     render() {
         return (
             <div>
@@ -94,10 +117,31 @@ class ChatRooms extends Component {
                         }}
                     />
                 </div>
-                <ul style={{ listStyleType: 'none', padding: 0 }}>
+                <ul
+                    style={{
+                        listStyleType: 'none',
+                        padding: 0,
+                        cursor: 'pointer'
+                    }}
+                >
                     {this.state.chatRooms &&
                         this.state.chatRooms.map((room) => {
-                            return <li key={room.id}># {room.name}</li>;
+                            return (
+                                <li
+                                    key={room.id}
+                                    style={{
+                                        backgroundColor:
+                                            room.id ===
+                                                this.state.activeChatRoomId &&
+                                            '#ffffff45'
+                                    }}
+                                    onClick={() => {
+                                        this.changeChatRoom(room);
+                                    }}
+                                >
+                                    # {room.name}
+                                </li>
+                            );
                         })}
                 </ul>
 
