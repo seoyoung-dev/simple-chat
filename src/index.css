@@ -143,3 +143,20 @@ body {
 #link:hover {
     color: black;
 }
+
+.message-form-button {
+    width: 100%;
+    background: #7a84eb;
+    color: white;
+    text-transform: uppercase;
+    border: none;
+    margin-top: 40px;
+    padding: 20px;
+    font-size: 16px;
+    font-weight: 100;
+    letter-spacing: 10px;
+    cursor: pointer;
+}
+.message-form-button:hover {
+    background-color: #636ee6;
+}
