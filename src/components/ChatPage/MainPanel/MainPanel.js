@@ -63,13 +63,6 @@ class MainPanel extends React.Component {
                             );
                         })}
                 </div>
-                <button
-                    onClick={() => {
-                        console.log(this.state);
-                    }}
-                >
-                    state
-                </button>
 
                 <MessageForm />
             </div>
