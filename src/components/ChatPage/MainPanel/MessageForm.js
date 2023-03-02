@@ -22,7 +22,7 @@ function MessageForm() {
 
     const createMessage = (fileUrl = null) => {
         const message = {
-            timestamp: new Date(),
+            timestamp: new Date().getTime(),
             user: { id: user.uid, name: user.displayName, image: user.photoURL }
         };
         if (fileUrl) {
