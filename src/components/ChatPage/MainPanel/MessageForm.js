@@ -67,7 +67,7 @@ function MessageForm() {
         const filePath = `message/public/${file.name}`;
         const metadata = { contentType: file.type };
         const storageRef = strRef(storage, filePath);
-
+        setLoading(true);
         try {
             // 파일을 먼저 스토리지에 저장
             const uploadTask = uploadBytesResumable(storageRef, file, metadata);
@@ -89,20 +89,21 @@ function MessageForm() {
                         case 'storage/unknown':
                             break;
                     }
-                    // Handle unsuccessful uploads
+                    setLoading(false);
                 },
+                // Handle successful uploads on complete
                 () => {
-                    // Handle successful uploads on complete
-                    // For instance, get the download URL: https://firebasestorage.googleapis.com/...
                     getDownloadURL(uploadTask.snapshot.ref).then(
                         (downloadURL) => {
-                            console.log('File available at', downloadURL);
+                            set(
+                                push(child(messageRef, chatRoom.id)),
+                                createMessage(downloadURL)
+                            );
+                            setLoading(false);
                         }
                     );
                 }
             );
-
-            // 파일 저장되는 퍼센티지 구하기
         } catch (error) {
             console.log(error.message);
         }
@@ -143,6 +144,7 @@ function MessageForm() {
                     <button
                         className="message-form-button"
                         onClick={handleSubmit}
+                        disabled={loading ? true : false}
                     >
                         전송
                     </button>
@@ -152,12 +154,14 @@ function MessageForm() {
                         className="message-form-button"
                         onSubmit={handleSubmit}
                         onClick={handleOpenImageRef}
+                        disabled={loading ? true : false}
                     >
                         업로드
                     </button>
                 </Col>
             </Row>
             <input
+                accept="image/jpeg, image/png"
                 type="file"
                 ref={inputOpenImageRef}
                 style={{ display: 'none' }}
