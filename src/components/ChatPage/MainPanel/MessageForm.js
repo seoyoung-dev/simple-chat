@@ -5,7 +5,11 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { database, storage } from '../../../firebase';
 import { child, ref, set, push } from 'firebase/database';
-import { ref as strRef, uploadBytes } from 'firebase/storage';
+import {
+    ref as strRef,
+    uploadBytesResumable,
+    getDownloadURL
+} from 'firebase/storage';
 import { useSelector } from 'react-redux';
 
 function MessageForm() {
@@ -14,6 +18,7 @@ function MessageForm() {
     const [content, setContent] = useState('');
     const [errors, setErrors] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [percentage, setPercentage] = useState(0);
     const messageRef = ref(database, 'messages');
     const inputOpenImageRef = useRef();
 
@@ -57,15 +62,49 @@ function MessageForm() {
         inputOpenImageRef.current.click();
     };
 
-    const handleUploadImage = async (e) => {
+    const handleUploadImage = (e) => {
+        const file = e.target.files[0];
+        const filePath = `message/public/${file.name}`;
+        const metadata = { contentType: file.type };
+        const storageRef = strRef(storage, filePath);
+
         try {
-            const file = e.target.files[0];
-            const filePath = `message/public/${file.name}`;
-            const metadata = { contentType: file.type };
-            const storageRef = strRef(storage, filePath);
-            await uploadBytes(storageRef, file, metadata);
+            // 파일을 먼저 스토리지에 저장
+            const uploadTask = uploadBytesResumable(storageRef, file, metadata);
+            uploadTask.on(
+                'state_changed',
+                (snapshot) => {
+                    const percentage =
+                        Math.round(
+                            snapshot.bytesTransferred / snapshot.totalBytes
+                        ) * 100;
+                    setPercentage(percentage);
+                },
+                (error) => {
+                    switch (error.code) {
+                        case 'storage/unauthoirized':
+                            break;
+                        case 'storage/canceled':
+                            break;
+                        case 'storage/unknown':
+                            break;
+                    }
+                    // Handle unsuccessful uploads
+                },
+                () => {
+                    // Handle successful uploads on complete
+                    // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+                    getDownloadURL(uploadTask.snapshot.ref).then(
+                        (downloadURL) => {
+                            console.log('File available at', downloadURL);
+                        }
+                    );
+                }
+            );
+
+            // 파일 저장되는 퍼센티지 구하기
         } catch (error) {
-            alert('이미지 업로드를 완료할 수 없습니다');
+            console.log(error.message);
         }
     };
 
@@ -84,7 +123,12 @@ function MessageForm() {
                     />
                 </Form.Group>
             </Form>
-            <ProgressBar variant="warning" now={60} />
+
+            <ProgressBar
+                variant="warning"
+                label={`${percentage}%`}
+                now={percentage}
+            />
             <div>
                 {errors.map((errorMsg, i) => {
                     return (
