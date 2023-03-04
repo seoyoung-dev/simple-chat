@@ -10,7 +10,10 @@ class MainPanel extends React.Component {
     state = {
         messages: [],
         messagesRef: ref(database, 'messages'),
-        messagesLoading: true
+        messagesLoading: true,
+        searchTerm: '',
+        searchResult: [],
+        searchLoading: false
     };
     // 리스너 등록
     componentDidMount() {
@@ -19,6 +22,30 @@ class MainPanel extends React.Component {
             this.addMessagesListeners(chatRoom.id);
         }
     }
+
+    handleSearchMessages = () => {
+        const chatRoomMessages = [...this.state.messages];
+        const regex = new RegExp(this.state.searchTerm, 'gi');
+        const searchResults = chatRoomMessages.reduce((acc, message) => {
+            if (
+                (message.content && message.content.match(regex)) ||
+                message.user.name.match(regex)
+            ) {
+                acc.push(message);
+            }
+            return acc;
+        }, []);
+        this.setState({ searchResults });
+    };
+
+    handleSearchChange = (e) => {
+        this.setState(
+            { searchTerm: e.target.value, searchLoading: true },
+            () => {
+                this.handleSearchMessages();
+            }
+        );
+    };
 
     addMessagesListeners = (chatRoomId) => {
         const messagesArray = [];
@@ -29,17 +56,23 @@ class MainPanel extends React.Component {
     };
 
     renderMessages = (messages) => {
-        messages > 0 &&
+        messages &&
             messages.map((message) => {
-                return <p>{message.user.name}</p>;
+                return (
+                    <Message
+                        key={message.timestamp}
+                        message={message}
+                        user={this.props.user}
+                    />
+                );
             });
     };
 
     render() {
-        const { messages } = this.state;
+        const { messages, searchTerm, searchResults } = this.state;
         return (
             <div style={{ padding: '2rem 2rem 0 2rem' }}>
-                <MessageHeader />
+                <MessageHeader handleSearchChange={this.handleSearchChange} />
 
                 <div
                     style={{
@@ -52,7 +85,10 @@ class MainPanel extends React.Component {
                         overflowY: 'auto'
                     }}
                 >
-                    {messages &&
+                    {searchTerm
+                        ? this.renderMessages(searchResults)
+                        : this.renderMessages(messages)}
+                    {/* {messages &&
                         messages.map((message) => {
                             return (
                                 <Message
@@ -61,7 +97,7 @@ class MainPanel extends React.Component {
                                     user={this.props.user}
                                 />
                             );
-                        })}
+                        })} */}
                 </div>
 
                 <MessageForm />

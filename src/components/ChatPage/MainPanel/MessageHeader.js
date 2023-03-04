@@ -11,7 +11,7 @@ import Accordion from 'react-bootstrap/Accordion';
 import { useAccordionButton } from 'react-bootstrap/AccordionButton';
 import Card from 'react-bootstrap/Card';
 
-function MessageHeader() {
+function MessageHeader({ handleSearchChange }) {
     const CustomToggle = ({ children, eventKey }) => {
         const decoratedOnClick = useAccordionButton(eventKey, () =>
             console.log('totally custom!')
@@ -53,6 +53,7 @@ function MessageHeader() {
                                 <AiOutlineSearch />
                             </InputGroup.Text>
                             <Form.Control
+                                onChange={handleSearchChange}
                                 placeholder="Search Messages"
                                 aria-label="Search"
                                 aria-describedby="basic-addon1"
