@@ -26,7 +26,7 @@ class MainPanel extends React.Component {
     handleSearchMessages = () => {
         const chatRoomMessages = [...this.state.messages];
         const regex = new RegExp(this.state.searchTerm, 'gi');
-        const searchResults = chatRoomMessages.reduce((acc, message) => {
+        const searchResult = chatRoomMessages.reduce((acc, message) => {
             if (
                 (message.content && message.content.match(regex)) ||
                 message.user.name.match(regex)
@@ -35,7 +35,7 @@ class MainPanel extends React.Component {
             }
             return acc;
         }, []);
-        this.setState({ searchResults });
+        this.setState({ searchResult });
     };
 
     handleSearchChange = (e) => {
@@ -55,21 +55,20 @@ class MainPanel extends React.Component {
         });
     };
 
-    renderMessages = (messages) => {
-        messages &&
-            messages.map((message) => {
-                return (
-                    <Message
-                        key={message.timestamp}
-                        message={message}
-                        user={this.props.user}
-                    />
-                );
-            });
-    };
+    renderMessages = (messages) =>
+        messages.length > 0 &&
+        messages.map((message) => {
+            return (
+                <Message
+                    key={message.timestamp}
+                    message={message}
+                    user={this.props.user}
+                />
+            );
+        });
 
     render() {
-        const { messages, searchTerm, searchResults } = this.state;
+        const { messages, searchTerm, searchResult } = this.state;
         return (
             <div style={{ padding: '2rem 2rem 0 2rem' }}>
                 <MessageHeader handleSearchChange={this.handleSearchChange} />
@@ -86,18 +85,8 @@ class MainPanel extends React.Component {
                     }}
                 >
                     {searchTerm
-                        ? this.renderMessages(searchResults)
+                        ? this.renderMessages(searchResult)
                         : this.renderMessages(messages)}
-                    {/* {messages &&
-                        messages.map((message) => {
-                            return (
-                                <Message
-                                    key={message.timestamp}
-                                    message={message}
-                                    user={this.props.user}
-                                />
-                            );
-                        })} */}
                 </div>
 
                 <MessageForm />
