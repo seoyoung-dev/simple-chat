@@ -1,7 +1,7 @@
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import { FaLock } from 'react-icons/fa';
+import { FaLock, FaLockOpen } from 'react-icons/fa';
 import { MdFavorite } from 'react-icons/md';
 import { AiOutlineSearch } from 'react-icons/ai';
 import Form from 'react-bootstrap/Form';
@@ -10,6 +10,7 @@ import Image from 'react-bootstrap/Image';
 import Accordion from 'react-bootstrap/Accordion';
 import { useAccordionButton } from 'react-bootstrap/AccordionButton';
 import Card from 'react-bootstrap/Card';
+import { useSelector } from 'react-redux';
 
 function MessageHeader({ handleSearchChange }) {
     const CustomToggle = ({ children, eventKey }) => {
@@ -27,6 +28,11 @@ function MessageHeader({ handleSearchChange }) {
             </button>
         );
     };
+
+    const chatRoom = useSelector((state) => state.chatRoom.currentChatRoom);
+    const isPrivateChatRoom = useSelector(
+        (state) => state.chatRoom.isPrivateChatRoom
+    );
     return (
         <div
             style={{
@@ -42,8 +48,8 @@ function MessageHeader({ handleSearchChange }) {
                 <Row>
                     <Col>
                         <h2>
-                            <FaLock />
-                            Room name
+                            {isPrivateChatRoom ? <FaLock /> : <FaLockOpen />}{' '}
+                            {chatRoom && chatRoom.name}
                             <MdFavorite />
                         </h2>
                     </Col>
