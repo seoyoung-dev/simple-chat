@@ -4,9 +4,18 @@ import { FaPlus } from 'react-icons/fa';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
+import Badge from 'react-bootstrap/Badge';
 import { connect } from 'react-redux';
 import { database } from '../../../firebase';
-import { ref, push, update, child, onChildAdded, off } from 'firebase/database';
+import {
+    ref,
+    push,
+    update,
+    child,
+    onChildAdded,
+    off,
+    onValue
+} from 'firebase/database';
 import {
     setCurrentChatRoom,
     setPrivateChatRoom
@@ -17,10 +26,12 @@ class ChatRooms extends Component {
         show: false,
         name: '',
         description: '',
+        messagesRef: ref(database, 'messages'),
         chatRoomsRef: ref(database, 'chatRooms'),
         chatRooms: [],
         firstLoad: true,
-        activeChatRoomId: ''
+        activeChatRoomId: '',
+        notifications: []
     };
 
     componentDidMount() {
@@ -47,7 +58,52 @@ class ChatRooms extends Component {
             this.setState({ chatRooms: chatRoomsArray }, () => {
                 this.setFirstChatRoom();
             });
+            // addNotificationListener 함수가 모든 방에 대해서 실행됨
+            this.addNotificationListener(data.key);
         });
+    };
+
+    addNotificationListener = (chatRoomId) => {
+        onValue(child(this.state.messagesRef, chatRoomId), (snapshot) => {
+            if (this.props.chatRoom) {
+                this.handleNotification(
+                    chatRoomId,
+                    this.props.chatRoom.id,
+                    this.state.notifications,
+                    snapshot
+                );
+            }
+        });
+    };
+
+    handleNotification = (
+        chatRoomId,
+        currentChatRoomId,
+        notifications,
+        snapshot
+    ) => {
+        // 목표는 방 하나하나에 맞는 알림 정보를 notification state에 넣어주기
+        // numChildrend은 firebase에서 제공하는 메서드. 자식이 몇개인지 확인할 수 있음.
+        let index = notifications.findIndex(
+            (notification) => notification.id === chatRoomId
+        );
+        if (index === -1) {
+            notifications.push({
+                id: chatRoomId,
+                total: snapshot.size,
+                lastKnownTotal: snapshot.size,
+                count: 0
+            });
+        } else {
+            if (chatRoomId !== currentChatRoomId) {
+                const lastTotal = notifications[index].lastKnownTotal;
+                if (snapshot.size - lastTotal > 0) {
+                    notifications[index].count = snapshot.size - lastTotal;
+                }
+            }
+            notifications[index].total = snapshot.size;
+        }
+        this.setState({ notifications });
     };
 
     handleClose = () => this.setState({ show: false });
@@ -99,6 +155,17 @@ class ChatRooms extends Component {
         this.props.dispatch(setPrivateChatRoom(false));
     };
 
+    getNotificationCount = (room) => {
+        let count = 0;
+        this.state.notifications.forEach((notification) => {
+            if (notification.id === room.id) {
+                count = notification.count;
+            }
+        });
+
+        if (count > 0) return count;
+    };
+
     render() {
         return (
             <div>
@@ -143,7 +210,13 @@ class ChatRooms extends Component {
                                         this.changeChatRoom(room);
                                     }}
                                 >
-                                    # {room.name}
+                                    # {room.name}{' '}
+                                    <Badge
+                                        style={{ float: 'right' }}
+                                        bg="danger"
+                                    >
+                                        {this.getNotificationCount(room)}
+                                    </Badge>
                                 </li>
                             );
                         })}
@@ -202,7 +275,8 @@ class ChatRooms extends Component {
 
 const mapStateToProps = (state) => {
     return {
-        user: state.user.currentUser
+        user: state.user.currentUser,
+        chatRoom: state.chatRoom.currentChatRoom
     };
 };
 
