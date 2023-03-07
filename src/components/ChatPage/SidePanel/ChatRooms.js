@@ -40,6 +40,9 @@ class ChatRooms extends Component {
 
     componentWillUnmount() {
         off(this.state.chatRoomsRef);
+        this.state.chatRooms.forEach((chatRoom) => {
+            off(chatRoom);
+        });
     }
 
     setFirstChatRoom = () => {
@@ -149,10 +152,26 @@ class ChatRooms extends Component {
         }
     };
 
+    clearNotifications = () => {
+        // nofitication 배열 속 room 넘버랑 맞는 정보 찾기
+        let index = this.state.notifications.findIndex(
+            (notification) => notification.id === this.props.chatRoom.id
+        );
+
+        if (index !== 1) {
+            let updatedNotification = [...this.state.notifications];
+            updatedNotification[index].lastKnownTotal =
+                this.state.notifications[index].total;
+            updatedNotification[index].count = 0;
+            this.setState({ notifications: updatedNotification });
+        }
+    };
+
     changeChatRoom = (room) => {
         this.props.dispatch(setCurrentChatRoom(room));
         this.setState({ activeChatRoomId: room.id });
         this.props.dispatch(setPrivateChatRoom(false));
+        this.clearNotifications();
     };
 
     getNotificationCount = (room) => {
