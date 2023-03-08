@@ -2,7 +2,7 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { FaLock, FaLockOpen } from 'react-icons/fa';
-import { MdFavorite } from 'react-icons/md';
+import { MdFavorite, MdFavoriteBorder } from 'react-icons/md';
 import { AiOutlineSearch } from 'react-icons/ai';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
@@ -11,8 +11,40 @@ import Accordion from 'react-bootstrap/Accordion';
 import { useAccordionButton } from 'react-bootstrap/AccordionButton';
 import Card from 'react-bootstrap/Card';
 import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { database } from '../../../firebase';
+import { child, ref, remove, update } from '@firebase/database';
 
 function MessageHeader({ handleSearchChange }) {
+    const [isFavorited, setIsFavorited] = useState(false);
+    const chatRoom = useSelector((state) => state.chatRoom.currentChatRoom);
+    const user = useSelector((state) => state.user.currentUser);
+    const isPrivateChatRoom = useSelector(
+        (state) => state.chatRoom.isPrivateChatRoom
+    );
+    const usersRef = ref(database, 'users');
+
+    const handleFavorite = () => {
+        // 즐겨찾기 취소
+        if (isFavorited) {
+            remove(child(usersRef, `${user.uid}/favorited/${chatRoom.id}`));
+            setIsFavorited((prev) => !prev);
+        } else {
+            update(child(usersRef, `${user.uid}/favorited`), {
+                [chatRoom.id]: {
+                    name: chatRoom.name,
+                    description: chatRoom.description,
+                    createdBy: {
+                        name: chatRoom.createdBy.name,
+                        image: chatRoom.createdBy.image
+                    }
+                }
+            });
+            setIsFavorited((prev) => !prev);
+        }
+    };
+
+    // 수정 필요
     const CustomToggle = ({ children, eventKey }) => {
         const decoratedOnClick = useAccordionButton(eventKey, () =>
             console.log('totally custom!')
@@ -29,10 +61,6 @@ function MessageHeader({ handleSearchChange }) {
         );
     };
 
-    const chatRoom = useSelector((state) => state.chatRoom.currentChatRoom);
-    const isPrivateChatRoom = useSelector(
-        (state) => state.chatRoom.isPrivateChatRoom
-    );
     return (
         <div
             style={{
@@ -50,7 +78,22 @@ function MessageHeader({ handleSearchChange }) {
                         <h2>
                             {isPrivateChatRoom ? <FaLock /> : <FaLockOpen />}{' '}
                             {chatRoom && chatRoom.name}
-                            <MdFavorite />
+                            {!isPrivateChatRoom && (
+                                <span
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={handleFavorite}
+                                >
+                                    {isFavorited ? (
+                                        <MdFavorite
+                                            style={{ alignItems: 'center' }}
+                                        />
+                                    ) : (
+                                        <MdFavoriteBorder
+                                            style={{ alignItems: 'center' }}
+                                        />
+                                    )}
+                                </span>
+                            )}
                         </h2>
                     </Col>
                     <Col>
