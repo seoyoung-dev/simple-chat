@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -11,9 +12,8 @@ import Accordion from 'react-bootstrap/Accordion';
 import { useAccordionButton } from 'react-bootstrap/AccordionButton';
 import Card from 'react-bootstrap/Card';
 import { useSelector } from 'react-redux';
-import { useEffect, useState } from 'react';
 import { database } from '../../../firebase';
-import { child, ref, remove, update } from '@firebase/database';
+import { child, ref, remove, update, onValue } from '@firebase/database';
 
 function MessageHeader({ handleSearchChange }) {
     const [isFavorited, setIsFavorited] = useState(false);
@@ -23,6 +23,25 @@ function MessageHeader({ handleSearchChange }) {
         (state) => state.chatRoom.isPrivateChatRoom
     );
     const usersRef = ref(database, 'users');
+
+    useEffect(() => {
+        if (chatRoom && user) {
+            addFavoriteListener(chatRoom.id, user.uid);
+        }
+    }, []);
+
+    const addFavoriteListener = (chatRoomId, userId) => {
+        onValue(
+            child(usersRef, `${user.uid}/favorited`),
+            (snapshot) => {
+                const chatRoomIds = snapshot.val();
+                const isAlreadyFavorited =
+                    Object.keys(chatRoomIds).includes(chatRoomId);
+                setIsFavorited(isAlreadyFavorited);
+            },
+            { onlyOnce: true }
+        );
+    };
 
     const handleFavorite = () => {
         // 즐겨찾기 취소
