@@ -21,7 +21,6 @@ function App() {
                 // 로그인이 된 상태
                 navigate('/');
                 dispatch(setUser(user));
-                console.log('user', user);
             } else {
                 // 로그인 되지 않은 상태
                 navigate('/login');

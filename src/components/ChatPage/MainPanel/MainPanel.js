@@ -4,7 +4,8 @@ import MessageForm from './MessageForm';
 import MessageHeader from './MessageHeader';
 import { database } from '../../../firebase';
 import { onChildAdded, ref, child } from 'firebase/database';
-import { connect } from 'react-redux';
+import { connect, dispatch } from 'react-redux';
+import { setUserPosts } from '../../../redux/actions/chatRoom_action';
 
 class MainPanel extends React.Component {
     state = {
@@ -52,7 +53,23 @@ class MainPanel extends React.Component {
         onChildAdded(child(this.state.messagesRef, chatRoomId), (data) => {
             messagesArray.push(data.val());
             this.setState({ messages: messagesArray, messagesLoading: false });
+            this.userPostsCount(messagesArray);
         });
+    };
+
+    userPostsCount = (messages) => {
+        const userPosts = messages.reduce((acc, message) => {
+            if (message.user.name in acc) {
+                acc[message.user.name].count += 1;
+            } else {
+                acc[message.user.name] = {
+                    count: 1,
+                    image: message.user.image
+                };
+            }
+            return acc;
+        }, {});
+        this.props.dispatch(setUserPosts(userPosts));
     };
 
     renderMessages = (messages) =>

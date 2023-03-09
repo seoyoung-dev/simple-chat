@@ -7,9 +7,7 @@ import { MdFavorite, MdFavoriteBorder } from 'react-icons/md';
 import { AiOutlineSearch } from 'react-icons/ai';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
-import Image from 'react-bootstrap/Image';
 import Accordion from 'react-bootstrap/Accordion';
-import { useAccordionButton } from 'react-bootstrap/AccordionButton';
 import Card from 'react-bootstrap/Card';
 import { useSelector } from 'react-redux';
 import { database } from '../../../firebase';
@@ -19,6 +17,7 @@ function MessageHeader({ handleSearchChange }) {
     const [isFavorited, setIsFavorited] = useState(false);
     const chatRoom = useSelector((state) => state.chatRoom.currentChatRoom);
     const user = useSelector((state) => state.user.currentUser);
+    const userPosts = useSelector((state) => state.chatRoom.userPosts);
     const isPrivateChatRoom = useSelector(
         (state) => state.chatRoom.isPrivateChatRoom
     );
@@ -32,7 +31,7 @@ function MessageHeader({ handleSearchChange }) {
 
     const addFavoriteListener = (chatRoomId, userId) => {
         onValue(
-            child(usersRef, `${user.uid}/favorited`),
+            child(usersRef, `${userId}/favorited`),
             (snapshot) => {
                 const chatRoomIds = snapshot.val();
                 const isAlreadyFavorited =
@@ -63,21 +62,35 @@ function MessageHeader({ handleSearchChange }) {
         }
     };
 
-    // 수정 필요
-    const CustomToggle = ({ children, eventKey }) => {
-        const decoratedOnClick = useAccordionButton(eventKey, () =>
-            console.log('totally custom!')
-        );
-
-        return (
-            <button
-                type="button"
-                style={{ backgroundColor: 'pink' }}
-                onClick={decoratedOnClick}
-            >
-                {children}
-            </button>
-        );
+    const renderUserPosts = (userPosts) => {
+        console.log(Object.entries(userPosts));
+        return Object.entries(userPosts)
+            .sort((a, b) => b[1].count - a[1].count)
+            .map(([key, val], i) => (
+                <div key={i} style={{ display: 'flex', marginTop: '20px' }}>
+                    <img
+                        src={val.image}
+                        alt={key}
+                        style={{
+                            borderRadius: '10px',
+                            width: '48px',
+                            height: '48px',
+                            marginRight: '10px'
+                        }}
+                    />
+                    <div
+                        style={{
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}
+                    >
+                        <h5>{key}</h5>
+                        <p>{val.count} 개</p>
+                    </div>
+                </div>
+            ));
     };
 
     return (
@@ -129,39 +142,62 @@ function MessageHeader({ handleSearchChange }) {
                         </InputGroup>
                     </Col>
                 </Row>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <p>
-                        <Image />
-                    </p>
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        marginBottom: '10px'
+                    }}
+                >
+                    <div style={{ display: 'flex' }}>
+                        <img
+                            className="mr-3"
+                            src={chatRoom && chatRoom.createdBy.image}
+                            alt={chatRoom && chatRoom.createdBy.name}
+                            style={{
+                                width: '30px',
+                                height: '30px',
+                                marginRight: '10px',
+                                border: 'none',
+                                borderRadius: '50%'
+                            }}
+                        />
+                        {chatRoom && <h5>{chatRoom.createdBy.name}</h5>}
+                    </div>
                 </div>
                 <Row>
                     <Col>
-                        <Accordion>
-                            <Card>
-                                <Card.Header style={{ padding: '0 1rem' }}>
-                                    <CustomToggle eventKey="0">
-                                        Descprio
-                                    </CustomToggle>
-                                </Card.Header>
-                                <Accordion.Collapse eventKey="0">
-                                    <Card.Body>Hello! I'm the body</Card.Body>
-                                </Accordion.Collapse>
-                            </Card>
-                        </Accordion>
+                        <Card>
+                            <Accordion>
+                                <Accordion>
+                                    <Accordion.Item eventKey="0">
+                                        <Accordion.Header>
+                                            Description
+                                        </Accordion.Header>
+                                        <Accordion.Body>
+                                            {chatRoom && chatRoom.description}
+                                        </Accordion.Body>
+                                    </Accordion.Item>
+                                </Accordion>
+                            </Accordion>
+                        </Card>
                     </Col>
                     <Col>
-                        <Accordion>
-                            <Card>
-                                <Card.Header style={{ padding: '0 1rem' }}>
-                                    <CustomToggle eventKey="0">
-                                        Click me!
-                                    </CustomToggle>
-                                </Card.Header>
-                                <Accordion.Collapse eventKey="0">
-                                    <Card.Body>Hello! I'm the body</Card.Body>
-                                </Accordion.Collapse>
-                            </Card>
-                        </Accordion>
+                        <Card>
+                            <Accordion>
+                                <Accordion>
+                                    <Accordion.Item eventKey="0">
+                                        <Accordion.Header>
+                                            Posts Count
+                                        </Accordion.Header>
+                                        <Accordion.Body>
+                                            {userPosts &&
+                                                renderUserPosts(userPosts)}
+                                        </Accordion.Body>
+                                    </Accordion.Item>
+                                </Accordion>
+                            </Accordion>
+                        </Card>
                     </Col>
                 </Row>
             </Container>

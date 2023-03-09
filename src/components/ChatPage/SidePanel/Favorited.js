@@ -24,7 +24,6 @@ function Favorited() {
     useEffect(() => {
         if (user) {
             addListners(user.uid);
-            console.log('heyyyy', favoritedChatRooms);
         }
         // unmount 시 listener 제거
         return () => {
