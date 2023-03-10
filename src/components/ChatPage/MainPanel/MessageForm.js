@@ -4,7 +4,7 @@ import ProgressBar from 'react-bootstrap/ProgressBar';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { database, storage } from '../../../firebase';
-import { child, ref, set, push } from 'firebase/database';
+import { child, ref, set, push, remove } from 'firebase/database';
 import {
     ref as strRef,
     uploadBytesResumable,
@@ -24,6 +24,7 @@ function MessageForm() {
     const isPrivateChatRoom = useSelector(
         (state) => state.chatRoom.isPrivateChatRoom
     );
+    const typingRef = ref(database, 'typing');
 
     const handleChange = (e) => {
         setContent(e.target.value);
@@ -52,6 +53,7 @@ function MessageForm() {
             set(push(child(messageRef, chatRoom.id)), createMessage());
             setContent('');
             setLoading(false);
+            await remove(child(typingRef, `${chatRoom.id}/${user.uid}`));
         } catch (error) {
             setErrors((prev) => prev.concat(error.message));
             setLoading(false);
@@ -120,6 +122,16 @@ function MessageForm() {
         }
     };
 
+    const handleKeyDown = () => {
+        if (content) {
+            set(child(typingRef, chatRoom.id), {
+                [user.uid]: user.displayName
+            });
+        } else {
+            remove(child(typingRef, `${chatRoom.id}/${user.uid}`));
+        }
+    };
+
     return (
         <div>
             <Form onSubmit={handleSubmit}>
@@ -128,6 +140,7 @@ function MessageForm() {
                     controlId="exampleForm.ControlTextarea1"
                 >
                     <Form.Control
+                        onKeyDown={handleKeyDown}
                         value={content}
                         onChange={handleChange}
                         as="textarea"
