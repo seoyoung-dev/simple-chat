@@ -63,7 +63,6 @@ function MessageHeader({ handleSearchChange }) {
     };
 
     const renderUserPosts = (userPosts) => {
-        console.log(Object.entries(userPosts));
         return Object.entries(userPosts)
             .sort((a, b) => b[1].count - a[1].count)
             .map(([key, val], i) => (
@@ -142,29 +141,34 @@ function MessageHeader({ handleSearchChange }) {
                         </InputGroup>
                     </Col>
                 </Row>
-                <div
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        marginBottom: '10px'
-                    }}
-                >
-                    <div style={{ display: 'flex' }}>
-                        <img
-                            className="mr-3"
-                            src={chatRoom && chatRoom.createdBy.image}
-                            alt={chatRoom && chatRoom.createdBy.name}
+                {!isPrivateChatRoom && (
+                    <Row>
+                        <div
                             style={{
-                                width: '30px',
-                                height: '30px',
-                                marginRight: '10px',
-                                border: 'none',
-                                borderRadius: '50%'
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                marginBottom: '10px'
                             }}
-                        />
-                        {chatRoom && <h5>{chatRoom.createdBy.name}</h5>}
-                    </div>
-                </div>
+                        >
+                            <div style={{ display: 'flex' }}>
+                                <img
+                                    className="mr-3"
+                                    src={chatRoom && chatRoom.createdBy.image}
+                                    alt={chatRoom && chatRoom.createdBy.name}
+                                    style={{
+                                        width: '30px',
+                                        height: '30px',
+                                        marginRight: '10px',
+                                        border: 'none',
+                                        borderRadius: '50%'
+                                    }}
+                                />
+                                {chatRoom && <h5>{chatRoom.createdBy.name}</h5>}
+                            </div>
+                        </div>
+                    </Row>
+                )}
+
                 <Row>
                     <Col>
                         <Card>
