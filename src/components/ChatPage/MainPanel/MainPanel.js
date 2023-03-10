@@ -3,7 +3,7 @@ import Message from './Message';
 import MessageForm from './MessageForm';
 import MessageHeader from './MessageHeader';
 import { database } from '../../../firebase';
-import { onChildAdded, ref, child } from 'firebase/database';
+import { onChildAdded, ref, child, onChildRemoved } from 'firebase/database';
 import { connect, dispatch } from 'react-redux';
 import { setUserPosts } from '../../../redux/actions/chatRoom_action';
 
@@ -14,15 +14,45 @@ class MainPanel extends React.Component {
         messagesLoading: true,
         searchTerm: '',
         searchResult: [],
-        searchLoading: false
+        searchLoading: false,
+        typingRef: ref(database, 'typing'),
+        typingUsers: []
     };
+
     // 리스너 등록
     componentDidMount() {
         const { chatRoom } = this.props;
         if (chatRoom) {
             this.addMessagesListeners(chatRoom.id);
+            this.addTypingListeners(chatRoom.id);
         }
     }
+
+    addTypingListeners = (chatRoomId) => {
+        let typingUsers = [];
+        onChildAdded(child(this.state.typingRef, chatRoomId), (data) => {
+            if (data.key !== this.props.user.uid) {
+                typingUsers = typingUsers.concat({
+                    id: data.key,
+                    name: data.val()
+                });
+            }
+            this.setState({ typingUsers });
+            console.log('hey', typingUsers);
+            console.log(this.state.typingUsers);
+        });
+
+        onChildRemoved(child(this.state.typingRef, chatRoomId), (data) => {
+            // 지워진 child의 정보가 데이터로 들어옴
+            const index = typingUsers.findIndex((user) => user.id === data.key);
+            if (index !== -1) {
+                typingUsers = typingUsers.filter(
+                    (user) => user.id !== data.key
+                );
+            }
+            this.setState({ typingUsers });
+        });
+    };
 
     handleSearchMessages = () => {
         const chatRoomMessages = [...this.state.messages];
@@ -84,8 +114,14 @@ class MainPanel extends React.Component {
             );
         });
 
+    renderTypingUsers = (typingUsers) =>
+        typingUsers.length &&
+        typingUsers.map((user) => (
+            <span>{user.name}님이 채팅을 입력하고 있습니다.</span>
+        ));
+
     render() {
-        const { messages, searchTerm, searchResult } = this.state;
+        const { messages, searchTerm, searchResult, typingUsers } = this.state;
         return (
             <div style={{ padding: '2rem 2rem 0 2rem' }}>
                 <MessageHeader handleSearchChange={this.handleSearchChange} />
@@ -104,6 +140,7 @@ class MainPanel extends React.Component {
                     {searchTerm
                         ? this.renderMessages(searchResult)
                         : this.renderMessages(messages)}
+                    {this.renderTypingUsers(typingUsers)}
                 </div>
 
                 <MessageForm />
