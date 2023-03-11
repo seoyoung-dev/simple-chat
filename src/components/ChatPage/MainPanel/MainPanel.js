@@ -12,6 +12,7 @@ import {
 } from 'firebase/database';
 import { connect, dispatch } from 'react-redux';
 import { setUserPosts } from '../../../redux/actions/chatRoom_action';
+import Skeleton from '../../../common/components/Skeleton';
 
 class MainPanel extends React.Component {
     state = {
@@ -136,8 +137,23 @@ class MainPanel extends React.Component {
             <span>{user.name}님이 채팅을 입력하고 있습니다.</span>
         ));
 
+    renderMessageSkeleton = (loading) =>
+        loading && (
+            <>
+                {[...Array(8)].map((ele, i) => (
+                    <Skeleton key={i} />
+                ))}
+            </>
+        );
+
     render() {
-        const { messages, searchTerm, searchResult, typingUsers } = this.state;
+        const {
+            messages,
+            searchTerm,
+            searchResult,
+            typingUsers,
+            messagesLoading
+        } = this.state;
         return (
             <div style={{ padding: '2rem 2rem 0 2rem' }}>
                 <MessageHeader handleSearchChange={this.handleSearchChange} />
@@ -153,6 +169,8 @@ class MainPanel extends React.Component {
                         overflowY: 'auto'
                     }}
                 >
+                    {this.renderMessageSkeleton(messagesLoading)}
+
                     {searchTerm
                         ? this.renderMessages(searchResult)
                         : this.renderMessages(messages)}
