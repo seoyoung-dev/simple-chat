@@ -3,7 +3,13 @@ import Message from './Message';
 import MessageForm from './MessageForm';
 import MessageHeader from './MessageHeader';
 import { database } from '../../../firebase';
-import { onChildAdded, ref, child, onChildRemoved } from 'firebase/database';
+import {
+    onChildAdded,
+    ref,
+    child,
+    onChildRemoved,
+    off
+} from 'firebase/database';
 import { connect, dispatch } from 'react-redux';
 import { setUserPosts } from '../../../redux/actions/chatRoom_action';
 
@@ -19,6 +25,8 @@ class MainPanel extends React.Component {
         typingUsers: []
     };
 
+    messageEndRef = React.createRef();
+
     // 리스너 등록
     componentDidMount() {
         const { chatRoom } = this.props;
@@ -27,6 +35,14 @@ class MainPanel extends React.Component {
             this.addTypingListeners(chatRoom.id);
         }
     }
+
+    componentDidUpdate() {
+        if (this.messageEndRef) {
+            this.messageEndRef.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    componentWillUnmount() {}
 
     addTypingListeners = (chatRoomId) => {
         let typingUsers = [];
@@ -141,6 +157,7 @@ class MainPanel extends React.Component {
                         ? this.renderMessages(searchResult)
                         : this.renderMessages(messages)}
                     {this.renderTypingUsers(typingUsers)}
+                    <div ref={(node) => (this.messageEndRef = node)}></div>
                 </div>
 
                 <MessageForm />
