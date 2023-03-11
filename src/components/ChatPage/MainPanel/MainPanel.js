@@ -55,8 +55,6 @@ class MainPanel extends React.Component {
                 });
             }
             this.setState({ typingUsers });
-            console.log('hey', typingUsers);
-            console.log(this.state.typingUsers);
         });
 
         onChildRemoved(child(this.state.typingRef, chatRoomId), (data) => {
