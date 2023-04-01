@@ -1,13 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+
 body {
-    background: #0e101c;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
         'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
-        'Helvetica Neue', sans-serif;
+        'Helvetica Neue', sans-serif; */
+    font-family: 'Roboto', sans-serif;
+    width: 100vw;
+    height: 100vh;
 }
 
 .auth-wrapper {
     display: flex;
     flex-direction: column;
+    width: 100%;
     min-height: 100vh;
     justify-content: center;
 }
@@ -159,4 +164,26 @@ body {
 }
 .message-form-button:hover {
     background-color: #636ee6;
+}
+
+.page-header {
+    font-weight: 700;
+    font-size: 57px;
+}
+
+.page-sub-header {
+    color: #9ca4af;
+    font-size: 20px;
+}
+
+.page-wrapper {
+    display: flex;
+}
+
+.gradient-background {
+    display: flex;
+    width: 100%;
+    background-image: url(./assets/images/gradient.jpg);
+    background-size: cover;
+    background-position: top;
 }

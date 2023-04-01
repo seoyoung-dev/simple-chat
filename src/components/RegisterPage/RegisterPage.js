@@ -56,7 +56,7 @@ function RegisterPage() {
     return (
         <div className="auth-wrapper">
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <h3>Register</h3>
+                <h2 className="page-header">REGISTER</h2>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -123,7 +123,7 @@ function RegisterPage() {
                     )}
                 {errorFromSubmit && <p>{errorFromSubmit}</p>}
 
-                <input type="submit" disabled={loading} />
+                <input type="submit" disabled={loading} name="로그인" />
             </form>
             <Link to={'/login'} id="link">
                 이미 아이디가 있나요?
