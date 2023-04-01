@@ -17,7 +17,9 @@ function LoginPage() {
     const onSubmit = async (data) => {
         try {
             await signInWithEmailAndPassword(auth, data.email, data.password);
-        } catch (error) {}
+        } catch (error) {
+            alert('이메일과 비밀번호가 일치하지 않습니다. 다시 시도해주세요.');
+        }
     };
 
     return (
