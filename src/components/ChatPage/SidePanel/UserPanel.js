@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { RiChatSmile2Line } from 'react-icons/ri';
+import { useNavigate } from 'react-router-dom';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Image from 'react-bootstrap/Image';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,6 +12,7 @@ import { ref, child, push, update } from 'firebase/database';
 
 function UserPanel() {
     const user = useSelector((state) => state.user.currentUser);
+    const navigate = useNavigate();
     const inputOpenImageRef = useRef();
     const dispatch = useDispatch();
 
@@ -19,6 +21,8 @@ function UserPanel() {
     };
     const handleLogOut = () => {
         signOut(auth);
+        navigate('/login');
+        window.location.reload();
         console.log('logout success!');
     };
 

@@ -1,7 +1,6 @@
 {
     "hosting": {
-        "public": "./build",
-        "rewrites": [{ "source": "**", "destination": "/index.html" }]
+        "public": "./build"
     },
     "database": {
         "rules": "database.rules.json"
